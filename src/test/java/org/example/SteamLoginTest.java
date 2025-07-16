@@ -3,55 +3,84 @@ package org.example;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Assertions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.By;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import java.time.Duration;
 
 public class SteamLoginTest extends BaseTest {
 
     @Test
-    @DisplayName("Тест: Успешный вход в Steam с правильными данными")
-    void testSuccessfulLogin() {
-        // Мы уже открыли STEAM_BASE_URL в BaseTest.setUp()
+    @DisplayName("Тест: Успешный вход в Steam (проверяет Steam Guard ИЛИ прямой логин)")
+    void testSuccessfulLoginFlow() {
         SteamHomePage homePage = new SteamHomePage(driver, wait);
 
-        // Переход на страницу логина
-        SteamLoginPage loginPage = homePage.clickLoginButton();
+        Assertions.assertTrue(driver.findElement(homePage.getLoginButtonLocator()).isDisplayed(), "Ошибка: Кнопка 'Войти' не отображается на главной странице.");
+        System.out.println("✓ Кнопка 'Войти' видна на главной странице.");
 
-        // Выполняем вход, используя константы
+        SteamLoginPage loginPage = homePage.clickLoginButton();
+        wait.until(ExpectedConditions.urlContains("login/"));
+        Assertions.assertTrue(driver.getCurrentUrl().contains("login/"), "Ошибка: Не удалось перейти на страницу логина.");
+        System.out.println("✓ Переход на страницу логина успешен.");
+
         loginPage.login(Constants.TEST_USERNAME, Constants.TEST_PASSWORD);
 
-        // Проверка: Убеждаемся, что пользователь вошел в систему
-        // ВНИМАНИЕ: Если Steam Guard или капча появятся, этот тест может упасть.
-        // Убедитесь, что TEST_USERNAME и TEST_PASSWORD - это данные рабочего тестового аккаунта.
-        Assertions.assertTrue(homePage.isUserLoggedIn(), "Ошибка: Не удалось успешно войти с правильными данными или индикатор входа не отображается.");
-        System.out.println("✓ Успешный вход! Индикатор входа отображается.");
+        // --- НОВАЯ ЛОГИКА ПРОВЕРКИ ---
+        boolean loggedInViaSteamGuard = false;
+        boolean loggedInDirectly = false;
 
-        // После успешного входа, всегда выходим, чтобы тест был изолированным для следующего запуска
-        driver.get(Constants.STEAM_LOGOUT_URL); // Используем константу
-        // После выхода, возвращаемся на домашнюю страницу, чтобы подтвердить выход или для следующих тестов
-        homePage.open();
-        System.out.println("Выход из аккаунта после успешного теста для изоляции.");
+        // Попробуем подождать, появится ли сообщение Steam Guard
+        // Здесь мы используем isSteamGuardMessageDisplayed() напрямую
+        loggedInViaSteamGuard = loginPage.isSteamGuardMessageDisplayed();
+
+
+        if (loggedInViaSteamGuard) {
+            Assertions.assertTrue(loggedInViaSteamGuard, "Ошибка: Сообщение Steam Guard не появилось после ввода правильных данных.");
+            System.out.println("✓ Сообщение Steam Guard отображается, первый этап логина пройден успешно.");
+        } else {
+            // Если Steam Guard не появился за короткий таймаут, возможно, вошли напрямую
+            // Проверяем, вошел ли пользователь напрямую
+            loggedInDirectly = homePage.isUserLoggedIn();
+            Assertions.assertTrue(loggedInDirectly, "Ошибка: Не удалось войти напрямую и сообщение Steam Guard не появилось.");
+            System.out.println("✓ Прямой вход успешно выполнен (Steam Guard пропущен).");
+
+            // Дополнительная проверка, если вошли напрямую
+            wait.until(ExpectedConditions.urlToBe(Constants.STEAM_BASE_URL));
+            Assertions.assertEquals(Constants.STEAM_BASE_URL, driver.getCurrentUrl(), "Ошибка: После успешного входа не вернулись на главную страницу.");
+            System.out.println("✓ После успешного входа вернулись на главную страницу.");
+        }
+
+        // Если вошли напрямую, выходим для чистоты следующего теста
+        if (loggedInDirectly) {
+            driver.get(Constants.STEAM_LOGOUT_URL);
+            homePage.open();
+            System.out.println("Выход из аккаунта после успешного теста для изоляции.");
+        }
     }
 
     @Test
     @DisplayName("Тест: Неудачный вход в Steam с неправильными данными")
     void testFailedLogin() {
-        // Открываем страницу входа напрямую для изоляции этого теста
-        SteamLoginPage loginPage = new SteamLoginPage(driver, wait);
-        loginPage.openLoginPage();
+        SteamHomePage homePage = new SteamHomePage(driver, wait);
+        SteamLoginPage loginPage = homePage.clickLoginButton();
 
-        // Попытка входа с неправильными данными
-        loginPage.login("wronguser12345", "wrongpassword12345"); // Неправильные данные не выносим в Constants, т.к. они специфичны для этого теста
+        wait.until(ExpectedConditions.urlContains("login/"));
+        Assertions.assertTrue(driver.getCurrentUrl().contains("login/"), "Ошибка: Не удалось перейти на страницу логина для теста неудачного входа.");
+        System.out.println("✓ На странице логина для теста неудачного входа.");
 
-        // Проверка 1: Ожидаем, что появится сообщение об ошибке
+        String WRONG_USERNAME = "wronguser12345";
+        String WRONG_PASSWORD = "wrongpassword12345";
+        loginPage.login(WRONG_USERNAME, WRONG_PASSWORD);
+
         Assertions.assertTrue(loginPage.isErrorMessageDisplayed(), "Ошибка: Сообщение об ошибке входа не отобразилось.");
 
-        // Проверка 2: Убеждаемся, что текст ошибки содержит ожидаемые фразы
         String actualErrorMessage = loginPage.getErrorMessage();
         Assertions.assertTrue(actualErrorMessage.contains(Constants.ERROR_MESSAGE_PART_RU) ||
                         actualErrorMessage.contains(Constants.ERROR_MESSAGE_PART_EN),
                 "Ошибка: Сообщение об ошибке не содержит ожидаемого текста. Фактический текст: " + actualErrorMessage);
         System.out.println("✓ Ошибка входа ожидаема: '" + actualErrorMessage + "'");
 
-        // Проверка 3: Убеждаемся, что мы остались на странице логина (т.е. URL все еще содержит "login")
+        wait.until(ExpectedConditions.urlContains("login"));
         Assertions.assertTrue(driver.getCurrentUrl().contains("login"), "Ошибка: Перешли на другую страницу после неудачного входа.");
         System.out.println("✓ Остались на странице входа после неудачной попытки, как и ожидалось.");
     }

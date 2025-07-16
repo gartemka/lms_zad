@@ -6,11 +6,13 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.time.Duration;
+
 public class SteamLoginPage {
     private WebDriver driver;
     private WebDriverWait wait;
 
-    // Локаторы для страницы входа (используем улучшенные XPath)
+    // Локаторы для страницы входа
     private By usernameField = By.xpath("//div[text()='Войдите, используя имя аккаунта']/following-sibling::input[@type='text']");
     private By passwordField = By.xpath("//div[text()='Пароль']/following-sibling::input[@type='password']");
     private By signInButton = By.xpath("//button[@type='submit' and text()='Войти']");
@@ -18,11 +20,18 @@ public class SteamLoginPage {
     // Локатор для сообщения об ошибке
     private By errorMessage = By.xpath("//div[@class='login_signin_error' and (contains(text(), '" + Constants.ERROR_MESSAGE_PART_RU + "') or contains(text(), '" + Constants.ERROR_MESSAGE_PART_EN + "'))]");
 
+    // УЛУЧШЕННЫЙ ЛОКАТОР ДЛЯ СООБЩЕНИЯ STEAM GUARD
+    // Теперь ищем div, который содержит div с изображением и div с нужным текстом.
+    // Это делает его более устойчивым, если классы обфусцированы или меняются.
+    private By steamGuardContainer = By.xpath("//div[contains(@class, '_3zQ9hnkyXJEv7nN0oBU56M')]"); // Основной контейнер
+    private By steamGuardMessageTextElement = By.xpath(
+            "//div[contains(@class, '_3zQ9hnkyXJEv7nN0oBU56M')]//div[contains(text(), 'Используйте мобильное приложение Steam, чтобы подтвердить вход')]"
+    ); // Элемент с текстом внутри контейнера
+
+
     public SteamLoginPage(WebDriver driver, WebDriverWait wait) {
         this.driver = driver;
         this.wait = wait;
-        // При создании объекта SteamLoginPage убедимся, что мы на странице логина
-        wait.until(ExpectedConditions.urlContains("login"));
         System.out.println("Создан Page Object SteamLoginPage. Текущий URL: " + driver.getCurrentUrl());
     }
 
@@ -67,19 +76,37 @@ public class SteamLoginPage {
      */
     public boolean isErrorMessageDisplayed() {
         try {
-            return wait.until(ExpectedConditions.visibilityOfElementLocated(errorMessage)).isDisplayed();
+            WebDriverWait shortWait = new WebDriverWait(driver, Duration.ofSeconds(Constants.SHORT_WAIT_TIMEOUT_SECONDS));
+            return shortWait.until(ExpectedConditions.visibilityOfElementLocated(errorMessage)).isDisplayed();
         } catch (Exception e) {
-            // Если элемент не найден в течение таймаута, значит, ошибка не отображается
             return false;
         }
     }
 
     /**
-     * Открывает страницу логина напрямую (полезно для изоляции тестов).
+     * Проверяет, отображается ли сообщение Steam Guard после ввода учетных данных.
+     */
+    public boolean isSteamGuardMessageDisplayed() {
+        try {
+            // Ожидаем видимости самого контейнера Steam Guard
+            wait.until(ExpectedConditions.visibilityOfElementLocated(steamGuardContainer));
+            // Затем ожидаем, что элемент с нужным текстом станет видимым внутри этого контейнера
+            return wait.until(ExpectedConditions.visibilityOfElementLocated(steamGuardMessageTextElement)).isDisplayed();
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    // Этот геттер больше не нужен, т.к. проверка теперь комплексная
+    // public By getSteamGuardMessageLocator() {
+    //     return steamGuardMessage;
+    // }
+
+    /**
+     * Открывает страницу логина напрямую.
      */
     public void openLoginPage() {
-        driver.get(Constants.STEAM_LOGIN_URL); // Используем константу
-        wait.until(ExpectedConditions.urlContains("login"));
+        driver.get(Constants.STEAM_LOGIN_URL);
         System.out.println("Открыта страница входа напрямую: " + driver.getCurrentUrl());
     }
 }
