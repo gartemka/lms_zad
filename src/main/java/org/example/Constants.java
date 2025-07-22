@@ -1,6 +1,8 @@
 package org.example;
 
 public final class Constants {
+
+
     private Constants() {
         // Приватный конструктор
     }
@@ -8,6 +10,7 @@ public final class Constants {
     // --- Константы вашего проекта ---
 
     // URL для Steam
+    public static final  String DEMOQA_FORM_URL = "https://demoqa.com/automation-practice-form";
     public static final String STEAM_BASE_URL = "https://store.steampowered.com/";
     public static final String STEAM_LOGIN_URL = STEAM_BASE_URL + "login/";
     public static final String STEAM_LOGOUT_URL = STEAM_BASE_URL + "logout/";
@@ -21,7 +24,7 @@ public final class Constants {
     public static final String TEST_PASSWORD = "ВАШ_ТЕСТОВЫЙ_ПАРОЛЬ_STEAM"; // <-- ОБНОВИТЕ
 
     // Пути к драйверам браузеров (Selenium Manager сделает их ненужными, но оставим для справки)
-    public static final String CHROMEDRIVER_PATH = "/usr/local/bin/chromedriver"; // На самом деле не используется с Selenium Manager
+    public static final String CHROMEDRIVER_PATH = "/home/gamer/IdeaProjects/lms/src/resources/chromedriver"; // На самом деле не используется с Selenium Manager
     public static final String GECKODRIVER_PATH = "/usr/local/bin/geckodriver";   // На самом деле не используется с Selenium Manager
 
     // Тип браузера для запуска тестов по умолчанию

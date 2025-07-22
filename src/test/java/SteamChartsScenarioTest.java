@@ -33,7 +33,7 @@ public class SteamChartsScenarioTest extends BaseTest { // Наследуем о
 
         // Шаг 3 (по вашему запросу): Получение названий и цен первых 10 игр
         int numberOfGamesToGet = 10;
-        // ИЗМЕНЕНИЕ: Используем searchResultsPage для получения данных
+        // ИЗЕНЕНИЕ: Используем searchResultsPage для получения данных
         List<Map<String, String>> top10Games = searchResultsPage.getTopNGamesData(numberOfGamesToGet);
 
         // Ассерты для Шага 3
