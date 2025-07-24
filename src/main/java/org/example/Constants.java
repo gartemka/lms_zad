@@ -17,6 +17,11 @@ public final class Constants {
     // ВНИМАНИЕ: ЗАМЕНИТЕ ЭТИ ЗАГЛУШКИ НА РЕАЛЬНЫЕ УЧЕТНЫЕ ДАННЫЕ ВАШЕГО ТЕСТОВОГО АККАУНТА STEAM
     public static final String TEST_USERNAME = "artemgg21022102"; //
     public static final String TEST_PASSWORD = "21022102aA"; //
+    // Сообщения об ошибках логина (Steam может выдавать их на разных языках)
+    public static final String ERROR_MESSAGE_PART_RU = "неверное имя аккаунта или пароль";
+    public static final String ERROR_MESSAGE_PART_EN = "Incorrect account name or password";
+    // НОВОЕ: Точное сообщение об ошибке для невалидных данных
+    public static final String INVALID_CREDENTIALS_FULL_MESSAGE_RU = "Пожалуйста, проверьте свой пароль и имя аккаунта и попробуйте снова.";
 
     // Пути к драйверам браузеров (Selenium Manager сделает их ненужными, но оставим для справки)
     public static final String CHROMEDRIVER_PATH = "/usr/local/bin/chromedriver";
@@ -30,9 +35,6 @@ public final class Constants {
     public static final int DEFAULT_WAIT_TIMEOUT_SECONDS = 15;
     public static final int SHORT_WAIT_TIMEOUT_SECONDS = 5; // <-- ДОБАВЛЕНА ЭТА КОНСТАНТА
 
-    // Сообщения об ошибках логина (Steam может выдавать их на разных языках)
-    public static final String ERROR_MESSAGE_PART_RU = "неверное имя аккаунта или пароль";
-    public static final String ERROR_MESSAGE_PART_EN = "Incorrect account name or password";
 
     // Можно добавить другие константы
     public static final String REPORT_FILE_NAME = "TestReport.html";

@@ -10,23 +10,21 @@ import java.time.Duration;
 
 public class SteamLoginPage {
     private WebDriver driver;
-    private WebDriverWait wait;
+    protected WebDriverWait wait; // Изменено на protected, чтобы SteamLoginTest мог использовать.
 
     // Локаторы для страницы входа
     private By usernameField = By.xpath("//div[text()='Войдите, используя имя аккаунта']/following-sibling::input[@type='text']");
     private By passwordField = By.xpath("//div[text()='Пароль']/following-sibling::input[@type='password']");
     private By signInButton = By.xpath("//button[@type='submit' and text()='Войти']");
 
-    // Локатор для сообщения об ошибке
-    private By errorMessage = By.xpath("//div[@class='login_signin_error' and (contains(text(), '" + Constants.ERROR_MESSAGE_PART_RU + "') or contains(text(), '" + Constants.ERROR_MESSAGE_PART_EN + "'))]");
+    // УЛУЧШЕННЫЙ ЛОКАТОР ДЛЯ СООБЩЕНИЯ ОБ ОШИБКЕ: теперь используется точный текст
+    private By errorMessage = By.xpath("//div[text()='" + Constants.INVALID_CREDENTIALS_FULL_MESSAGE_RU + "']");
 
-    // УЛУЧШЕННЫЙ ЛОКАТОР ДЛЯ СООБЩЕНИЯ STEAM GUARD
-    // Теперь ищем div, который содержит div с изображением и div с нужным текстом.
-    // Это делает его более устойчивым, если классы обфусцированы или меняются.
-    private By steamGuardContainer = By.xpath("//div[contains(@class, '_3zQ9hnkyXJEv7nN0oBU56M')]"); // Основной контейнер
+    // Локатор для сообщения Steam Guard
+    private By steamGuardContainer = By.xpath("//div[contains(@class, '_3zQ9hnkyXJEv7nN0oBU56M')]");
     private By steamGuardMessageTextElement = By.xpath(
-            "//div[contains(@class, '_3zQ9hnkyXJEv7nN0oBU56M')]//div[contains(text(), 'Используйте мобильное приложение Steam, чтобы подтвердить вход')]"
-    ); // Элемент с текстом внутри контейнера
+            "//div[contains(@class, '_3zQ9hnkyXJEv7nN0oBU56M')]//div[contains(text(), 'Используйте')]"
+    );
 
 
     public SteamLoginPage(WebDriver driver, WebDriverWait wait) {
@@ -88,19 +86,19 @@ public class SteamLoginPage {
      */
     public boolean isSteamGuardMessageDisplayed() {
         try {
-            // Ожидаем видимости самого контейнера Steam Guard
             wait.until(ExpectedConditions.visibilityOfElementLocated(steamGuardContainer));
-            // Затем ожидаем, что элемент с нужным текстом станет видимым внутри этого контейнера
             return wait.until(ExpectedConditions.visibilityOfElementLocated(steamGuardMessageTextElement)).isDisplayed();
         } catch (Exception e) {
             return false;
         }
     }
 
-    // Этот геттер больше не нужен, т.к. проверка теперь комплексная
-    // public By getSteamGuardMessageLocator() {
-    //     return steamGuardMessage;
-    // }
+    /**
+     * Возвращает локатор сообщения Steam Guard (если нужен прямой доступ)
+     */
+    public By getSteamGuardMessageTextElementLocator() {
+        return steamGuardMessageTextElement;
+    }
 
     /**
      * Открывает страницу логина напрямую.

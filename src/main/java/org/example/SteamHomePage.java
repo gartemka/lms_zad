@@ -8,6 +8,8 @@ import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.time.Duration;
+
 public class SteamHomePage {
     private WebDriver driver;
     private WebDriverWait wait;
@@ -22,7 +24,7 @@ public class SteamHomePage {
     private By foryouFlyout = By.id("foryou_flyout"); // Контейнер для выпадающего меню "Магазин"
     private By homePageSubMenuItem = By.xpath("//div[@id='foryou_flyout']//a[text()='Главная страница']");
 
-    private final By noteworthyMenuButton = By.xpath("//div[@id='noteworthy_tab']//a[contains(text(), 'Новое и интересное')]");
+    private By noteworthyMenuButton = By.xpath("//div[@id='noteworthy_tab']//a[contains(text(), 'Новое и интересное')]");
     private By noteworthyFlyout = By.id("noteworthy_flyout"); // Контейнер для выпадающего меню "Новое и интересное"
     private By bestsellersSubMenuItem = By.xpath("//div[@id='noteworthy_flyout']//a[text()='Лидеры продаж']");
 
@@ -31,8 +33,7 @@ public class SteamHomePage {
     private By freeToPlaySubMenuItem = By.xpath("//div[@id='genre_flyout']//a[text()='Бесплатные']");
 
     private By searchInputField = By.xpath("//input[@id='store_nav_search_term']");
-    // Локатор кнопки поиска оставлен, но в методе enterSearchTerm используется Keys.ENTER
-    private By searchButton = By.xpath("//form[@id='searchform']//a[@id='store_search_link']");
+    private By searchButton = By.xpath("//form[@id='searchform']//a[@id='store_search_link']"); // Уточненный локатор кнопки поиска
 
     // Локаторы для секций на главной странице
     private By discountsAndEventsHeader = By.xpath("//h2[text()='Скидки и мероприятия']");
@@ -90,7 +91,9 @@ public class SteamHomePage {
         WebElement storeMenu = wait.until(ExpectedConditions.elementToBeClickable(storeMenuButton));
         actions.moveToElement(storeMenu).perform();
         System.out.println("Наведен курсор на меню 'Магазин'.");
-        // Ждем, пока пункт меню станет кликабельным (подразумевает, что и flyout виден)
+        // Жесткая пауза для отладки, если меню медленно появляется. Уберите ее, если не нужна.
+        try { Thread.sleep(Constants.TINY_PAUSE_MILLISECONDS); } catch (InterruptedException e) { e.printStackTrace(); }
+        // Ожидаем, что пункт меню станет кликабельным (подразумевает, что и flyout виден)
         wait.until(ExpectedConditions.elementToBeClickable(homePageSubMenuItem));
     }
 
@@ -107,7 +110,7 @@ public class SteamHomePage {
      * Вводит текст в поле поиска и нажимает Enter.
      */
     public void enterSearchTerm(String term) {
-        WebElement searchInput = wait.until(ExpectedConditions.elementToBeClickable(searchInputField)); // Ждем, пока поле будет кликабельным
+        WebElement searchInput = wait.until(ExpectedConditions.elementToBeClickable(searchInputField));
         searchInput.clear();
         searchInput.sendKeys(term);
         // Небольшая пауза может помочь, если Steam динамически загружает подсказки или обрабатывает ввод
@@ -146,8 +149,9 @@ public class SteamHomePage {
         WebElement noteworthyMenu = wait.until(ExpectedConditions.elementToBeClickable(noteworthyMenuButton));
         actions.moveToElement(noteworthyMenu).perform();
         System.out.println("Наведен курсор на меню 'Новое и интересное'.");
-        // Ждем, пока пункт подменю станет кликабельным
-        wait.until(ExpectedConditions.elementToBeClickable(bestsellersSubMenuItem)).click();
+        // Жесткая пауза для отладки, если меню медленно появляется. Уберите ее, если не нужна.
+        try { Thread.sleep(Constants.TINY_PAUSE_MILLISECONDS); } catch (InterruptedException e) { e.printStackTrace(); }
+        wait.until(ExpectedConditions.elementToBeClickable(bestsellersSubMenuItem)).click(); // Ожидаем кликабельности пункта
         System.out.println("Клик по пункту 'Лидеры продаж'.");
         return new SteamChartsPage(driver, wait);
     }
@@ -159,8 +163,9 @@ public class SteamHomePage {
         WebElement categoriesMenu = wait.until(ExpectedConditions.elementToBeClickable(categoriesMenuButton));
         actions.moveToElement(categoriesMenu).perform();
         System.out.println("Наведен курсор на меню 'Категории'.");
-        // Ждем, пока пункт подменю станет кликабельным
-        wait.until(ExpectedConditions.elementToBeClickable(freeToPlaySubMenuItem)).click();
+        // Жесткая пауза для отладки, если меню медленно появляется. Уберите ее, если не нужна.
+        try { Thread.sleep(Constants.TINY_PAUSE_MILLISECONDS); } catch (InterruptedException e) { e.printStackTrace(); }
+        wait.until(ExpectedConditions.elementToBeClickable(freeToPlaySubMenuItem)).click(); // Ожидаем кликабельности пункта
         System.out.println("Клик по пункту 'Бесплатные'.");
         return new SteamFreeToPlayPage(driver, wait);
     }
