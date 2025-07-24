@@ -71,17 +71,15 @@ public class PracticeFormPage {
     }
 
     // --- Приватные методы для динамического создания локаторов ---
-    // ИСПРАВЛЕНИЕ: Методы возвращают By, принимают String
+    // ЭТИ МЕТОДЫ НЕ НАДО БЫЛО ИЗМЕНЯТЬ. ОНИ БЫЛИ ПРАВИЛЬНЫМИ
     private By getSubjectOptionByText(String text) {
         return By.xpath(String.format("//div[contains(@id, 'react-select') and contains(@id, 'option') and text()='%s']", text));
     }
 
-    // ИСПРАВЛЕНИЕ: Методы возвращают By, принимают String
     private By getStateOptionByText(String text) {
         return By.xpath(String.format("//div[contains(@id, 'react-select-3-option') and text()='%s']", text));
     }
 
-    // ИСПРАВЛЕНИЕ: Методы возвращают By, принимают String
     private By getCityOptionByText(String text) {
         return By.xpath(String.format("//div[contains(@id, 'react-select-4-option') and text()='%s']", text));
     }
@@ -127,7 +125,10 @@ public class PracticeFormPage {
     }
 
     public void setDateOfBirth(int year, int month, int day) {
-        wait.until(ExpectedConditions.elementToBeClickable(dateOfBirthInputField)).click();
+        WebElement dateInput = wait.until(ExpectedConditions.elementToBeClickable(dateOfBirthInputField));
+
+        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", dateInput);
+        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", dateInput);
 
         WebElement monthDropdownElement = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector(".react-datepicker__month-select")));
         Select monthSelect = new Select(monthDropdownElement);
@@ -147,7 +148,6 @@ public class PracticeFormPage {
         for (String subject : subjects) {
             WebElement subjectInput = wait.until(ExpectedConditions.elementToBeClickable(subjectsInput));
             subjectInput.sendKeys(subject);
-            // ИСПРАВЛЕНИЕ: Вызываем приватный метод getSubjectOptionByText
             wait.until(ExpectedConditions.elementToBeClickable(getSubjectOptionByText(subject))).click();
             System.out.println("Добавлен предмет: " + subject);
         }
@@ -191,21 +191,22 @@ public class PracticeFormPage {
     public void setStateAndCity(String state, String city) {
         // Выбираем State
         WebElement stateInputElem = wait.until(ExpectedConditions.elementToBeClickable(stateInput));
+        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", stateInputElem);
         stateInputElem.sendKeys(state);
-        // ИСПРАВЛЕНИЕ: Вызываем приватный метод getStateOptionByText
+
         wait.until(ExpectedConditions.elementToBeClickable(getStateOptionByText(state))).click();
         System.out.println("Выбрана область: " + state);
 
         // Выбираем City
         WebElement cityInputElem = wait.until(ExpectedConditions.elementToBeClickable(cityInput));
         cityInputElem.sendKeys(city);
-        // ИСПРАВЛЕНИЕ: Вызываем приватный метод getCityOptionByText
         wait.until(ExpectedConditions.elementToBeClickable(getCityOptionByText(city))).click();
         System.out.println("Выбран город: " + city);
     }
 
     public void submitForm() {
         WebElement submitBtn = wait.until(ExpectedConditions.elementToBeClickable(submitButton));
+        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", submitBtn);
         ((JavascriptExecutor) driver).executeScript("arguments[0].click();", submitBtn);
         System.out.println("Нажата кнопка 'Submit'.");
     }
@@ -226,8 +227,10 @@ public class PracticeFormPage {
     }
 
     public void closeSubmissionModal() {
-        wait.until(ExpectedConditions.elementToBeClickable(closeSubmitModalButton)).click();
+        WebElement closeModalButton = wait.until(ExpectedConditions.elementToBeClickable(closeSubmitModalButton));
+        // ИСПРАВЛЕНИЕ: Кликаем по кнопке закрытия с помощью JavaScript для надежности
+        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", closeModalButton);
         System.out.println("Модальное окно подтверждения закрыто.");
-        wait.until(ExpectedConditions.invisibilityOfElementLocated(modalTitle));
+        wait.until(ExpectedConditions.invisibilityOfElementLocated(modalTitle)); // Ждем, пока модальное окно исчезнет
     }
 }
