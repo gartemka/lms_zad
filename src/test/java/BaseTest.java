@@ -44,12 +44,12 @@ public class BaseTest {
         if (browserType.equalsIgnoreCase("chrome")) {
             ChromeOptions options = new ChromeOptions();
             // options.addArguments("--incognito");
-            // options.addArguments("--headless");
+             options.addArguments("--headless");
             driver = new ChromeDriver(options);
         } else if (browserType.equalsIgnoreCase("firefox")) {
             FirefoxOptions options = new FirefoxOptions();
             // options.addArguments("--private");
-            // options.addArguments("--headless");
+             options.addArguments("--headless");
             driver = new FirefoxDriver(options);
         } else {
             throw new IllegalArgumentException("Неподдерживаемый тип браузера: " + browserType);
